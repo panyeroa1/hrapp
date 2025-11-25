@@ -8,6 +8,14 @@ export const AVATAR_URL = 'https://images.unsplash.com/photo-1573496359142-b8d87
 // Professional modern office background
 export const OFFICE_BACKGROUND_URL = 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1920&auto=format&fit=crop';
 
+export const VOICE_OPTIONS = [
+  { id: 'Aoede', name: 'Aoede (Professional, Calm)', gender: 'Female' },
+  { id: 'Kore', name: 'Kore (Warm, Encouraging)', gender: 'Female' },
+  { id: 'Fenrir', name: 'Fenrir (Deep, Authoritative)', gender: 'Male' },
+  { id: 'Charon', name: 'Charon (Steady, Neutral)', gender: 'Male' },
+  { id: 'Puck', name: 'Puck (Energetic, Friendly)', gender: 'Male' },
+];
+
 const BASE_SYSTEM_PROMPT = `[AGENT SYSTEM PROMPT – HR MANAGER “BEATRICE” – VIDEO INTERVIEWER]
 
 ROLE & CORE IDENTITY

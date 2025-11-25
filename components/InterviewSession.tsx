@@ -7,9 +7,10 @@ import { ApplicantData } from '../types';
 interface InterviewSessionProps {
   onEndCall: () => void;
   applicantData: ApplicantData;
+  voiceName: string;
 }
 
-const InterviewSession: React.FC<InterviewSessionProps> = ({ onEndCall, applicantData }) => {
+const InterviewSession: React.FC<InterviewSessionProps> = ({ onEndCall, applicantData, voiceName }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [micVolume, setMicVolume] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -40,7 +41,7 @@ const InterviewSession: React.FC<InterviewSessionProps> = ({ onEndCall, applican
 
         if (videoRef.current) {
             console.log("Connecting with applicant data:", applicantData);
-            await liveClient.connect(videoRef.current, applicantData);
+            await liveClient.connect(videoRef.current, applicantData, voiceName);
             setStatus('connected');
             setClient(liveClient);
         }

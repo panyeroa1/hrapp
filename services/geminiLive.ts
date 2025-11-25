@@ -29,7 +29,7 @@ export class GeminiLiveClient {
     this.onSpeakingChange = onSpeakingChange;
   }
 
-  async connect(videoElement: HTMLVideoElement, applicantData: ApplicantData) {
+  async connect(videoElement: HTMLVideoElement, applicantData: ApplicantData, voiceName: string = 'Aoede') {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -81,7 +81,7 @@ export class GeminiLiveClient {
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }, // 'Kore' is a standard supported voice
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } },
           },
           systemInstruction: getSystemInstruction(applicantData),
           // Enable transcription with empty objects (default settings)

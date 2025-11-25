@@ -4,13 +4,14 @@ import ApplicantForm from './components/ApplicantForm';
 import LandingPage from './components/LandingPage';
 import AdminLogin from './components/AdminLogin';
 import AdminPortal from './components/AdminPortal';
-import { AVATAR_URL } from './constants';
+import { AVATAR_URL, VOICE_OPTIONS } from './constants';
 import { ApplicantData, AppStep } from './types';
 
 function App() {
   const [step, setStep] = useState<AppStep>('landing');
   const [applicantData, setApplicantData] = useState<ApplicantData | null>(null);
   const [hasPermissions, setHasPermissions] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState('Aoede');
 
   const handleFormSubmit = (data: ApplicantData) => {
     setApplicantData(data);
@@ -45,6 +46,7 @@ function App() {
   const handleStartOver = () => {
     setApplicantData(null);
     setHasPermissions(false);
+    setSelectedVoice('Aoede');
     setStep('landing');
   };
 
@@ -84,7 +86,7 @@ function App() {
   if (step === 'interview' && !hasPermissions) {
       return (
         <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center">
-            <div className="max-w-md w-full space-y-8">
+            <div className="max-w-md w-full space-y-8 animate-fade-in">
                 <div className="flex flex-col items-center">
                     <div className="relative w-32 h-32 mb-6">
                         <img 
@@ -99,27 +101,42 @@ function App() {
                         Hello, {applicantData?.name.split(' ')[0]}
                     </h1>
                     <p className="mt-2 text-gray-400">
-                        Ready for your interview for the <strong>{applicantData?.role}</strong> position?
+                        Customize your interview experience for the <strong>{applicantData?.role}</strong> position.
                     </p>
                 </div>
 
                 <div className="bg-gray-800 rounded-2xl p-6 text-left shadow-lg border border-gray-700">
-                    <div className="flex items-start space-x-4 mb-4">
+                    <h3 className="text-white font-medium mb-4">Interview Settings</h3>
+                    
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-400 mb-2">Select Interviewer Voice</label>
+                        <div className="space-y-2">
+                            {VOICE_OPTIONS.map((voice) => (
+                                <button
+                                    key={voice.id}
+                                    onClick={() => setSelectedVoice(voice.id)}
+                                    className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                                        selectedVoice === voice.id 
+                                        ? 'bg-indigo-600/20 border-indigo-500 text-white' 
+                                        : 'bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-500'
+                                    }`}
+                                >
+                                    <span className="font-medium">{voice.name}</span>
+                                    {selectedVoice === voice.id && (
+                                        <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 mb-4 pt-4 border-t border-gray-700">
                         <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                         <div>
                             <h3 className="text-white font-medium">Duration</h3>
                             <p className="text-gray-400 text-sm">Approx. 30-45 minutes</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start space-x-4">
-                        <div className="bg-purple-500/20 p-2 rounded-lg text-purple-400">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                        </div>
-                        <div>
-                            <h3 className="text-white font-medium">Format</h3>
-                            <p className="text-gray-400 text-sm">Live Video Interaction</p>
                         </div>
                     </div>
                 </div>
@@ -147,7 +164,11 @@ function App() {
   if (step === 'interview' && hasPermissions && applicantData) {
     return (
         <div className="h-screen w-screen overflow-hidden">
-            <InterviewSession onEndCall={handleEndCall} applicantData={applicantData} />
+            <InterviewSession 
+                onEndCall={handleEndCall} 
+                applicantData={applicantData} 
+                voiceName={selectedVoice}
+            />
         </div>
     );
   }
