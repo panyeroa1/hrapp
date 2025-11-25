@@ -1,4 +1,4 @@
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import { GoogleGenerativeAI, ServerMessage, Content } from '@google/generative-ai/server';
 import { getSystemInstruction, LIVE_API_MODEL } from '../constants';
 import { createPcmBlob, decodeAudioData, base64ToUint8Array } from './audioUtils';
 import { ApplicantData, TranscriptItem } from '../types';
@@ -24,7 +24,7 @@ export class GeminiLiveClient {
   }
 
   async connect(videoElement: HTMLVideoElement, applicantData: ApplicantData) {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenerativeAI(process.env.API_KEY as string);
 
     this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -68,7 +68,7 @@ export class GeminiLiveClient {
           onopen: () => {
             console.log('Gemini Live Connection Opened');
           },
-          onmessage: async (message: LiveServerMessage) => {
+          onmessage: async (message: ServerMessage) => {
             this.handleServerMessage(message);
           },
           onclose: (e) => {

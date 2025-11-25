@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ApplicantData, InterviewReport, JobPosting } from '../types';
 
 interface AdminPortalProps {
