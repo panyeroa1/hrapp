@@ -1,0 +1,8 @@
+{
+  "name": "hr-app",
+  "description": "A real-time video interview simulator with Beatrice, an AI HR Manager.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
