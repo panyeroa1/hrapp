@@ -13,6 +13,7 @@ const InterviewSession: React.FC<InterviewSessionProps> = ({ onEndCall, applican
   const videoRef = useRef<HTMLVideoElement>(null);
   const [micVolume, setMicVolume] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [client, setClient] = useState<GeminiLiveClient | null>(null);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'analyzing'>('connecting');
 
@@ -33,7 +34,8 @@ const InterviewSession: React.FC<InterviewSessionProps> = ({ onEndCall, applican
             (vol) => setMicVolume(vol),
             () => {
                // On unforeseen disconnect
-            }
+            },
+            (speaking) => setIsAiSpeaking(speaking)
         );
 
         if (videoRef.current) {
@@ -122,7 +124,7 @@ const InterviewSession: React.FC<InterviewSessionProps> = ({ onEndCall, applican
         </div>
         
         <div className="relative z-10 flex flex-col items-center">
-            <div className={`relative w-40 h-40 sm:w-56 sm:h-56 rounded-full border-4 border-gray-700 shadow-2xl overflow-hidden transition-all duration-300 ${status === 'connected' ? 'speaking-ring' : ''}`}>
+            <div className={`relative w-40 h-40 sm:w-56 sm:h-56 rounded-full border-4 shadow-2xl overflow-hidden transition-all duration-300 ${isAiSpeaking ? 'border-emerald-500 speaking-ring' : 'border-gray-700'}`}>
                 <img 
                     src={AVATAR_URL} 
                     alt="Beatrice HR" 

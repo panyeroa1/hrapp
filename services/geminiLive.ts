@@ -12,15 +12,21 @@ export class GeminiLiveClient {
   private sources = new Set<AudioBufferSourceNode>();
   private onVolumeChange: (vol: number) => void;
   private onDisconnect: () => void;
+  private onSpeakingChange: (isSpeaking: boolean) => void;
   
   // Transcription state
   private transcript: TranscriptItem[] = [];
   private currentInputTranscription = '';
   private currentOutputTranscription = '';
 
-  constructor(onVolumeChange: (vol: number) => void, onDisconnect: () => void) {
+  constructor(
+    onVolumeChange: (vol: number) => void, 
+    onDisconnect: () => void,
+    onSpeakingChange: (isSpeaking: boolean) => void
+  ) {
     this.onVolumeChange = onVolumeChange;
     this.onDisconnect = onDisconnect;
+    this.onSpeakingChange = onSpeakingChange;
   }
 
   async connect(videoElement: HTMLVideoElement, applicantData: ApplicantData) {
@@ -224,8 +230,13 @@ export class GeminiLiveClient {
         this.nextStartTime += audioBuffer.duration;
 
         this.sources.add(source);
+        this.onSpeakingChange(true);
+
         source.onended = () => {
             this.sources.delete(source);
+            if (this.sources.size === 0) {
+                this.onSpeakingChange(false);
+            }
         };
     } catch (err) {
         console.error("Error decoding audio chunk", err);
@@ -237,6 +248,7 @@ export class GeminiLiveClient {
         try { source.stop(); } catch (e) { }
     });
     this.sources.clear();
+    this.onSpeakingChange(false);
     if(this.outputAudioContext) {
         this.nextStartTime = this.outputAudioContext.currentTime;
     }
