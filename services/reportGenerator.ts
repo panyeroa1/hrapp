@@ -1,11 +1,11 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { ApplicantData, InterviewReport, TranscriptItem } from "../types";
 
 export const generateInterviewReport = async (
   applicant: ApplicantData,
   transcript: TranscriptItem[]
 ): Promise<InterviewReport> => {
-  const ai = new GoogleGenerativeAI(process.env.API_KEY as string);
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   // If transcript is empty (e.g. mic issues or short call), provide a mock or minimal report
   const transcriptText = transcript.length > 0 
@@ -25,8 +25,8 @@ export const generateInterviewReport = async (
   `;
 
   try {
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
