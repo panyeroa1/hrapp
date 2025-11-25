@@ -31,6 +31,7 @@ const AdminPortal: React.FC<AdminPortalProps> = ({ onLogout }) => {
     description: '',
     requirements: []
   });
+  const [reqInput, setReqInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ const AdminPortal: React.FC<AdminPortalProps> = ({ onLogout }) => {
       localStorage.setItem('eburon_jobs', JSON.stringify(updatedJobs));
       setIsCreatingJob(false);
       setNewJob({ title: '', department: '', location: '', description: '', requirements: [] });
+      setReqInput('');
       setSelectedJobId(job.id);
   };
 
@@ -108,6 +110,22 @@ const AdminPortal: React.FC<AdminPortalProps> = ({ onLogout }) => {
       const updated = jobs.map(j => j.id === id ? { ...j, status: newStatus } : j);
       setJobs(updated);
       localStorage.setItem('eburon_jobs', JSON.stringify(updated));
+  };
+
+  const handleAddRequirement = () => {
+    if (reqInput.trim()) {
+        setNewJob({
+            ...newJob,
+            requirements: [...(newJob.requirements || []), reqInput.trim()]
+        });
+        setReqInput('');
+    }
+  };
+
+  const handleRemoveRequirement = (index: number) => {
+    const updated = [...(newJob.requirements || [])];
+    updated.splice(index, 1);
+    setNewJob({ ...newJob, requirements: updated });
   };
 
   const handleAiGenerateJob = async () => {
@@ -452,6 +470,41 @@ const AdminPortal: React.FC<AdminPortalProps> = ({ onLogout }) => {
                                     value={newJob.description}
                                     onChange={e => setNewJob({...newJob, description: e.target.value})}
                                 />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-400 mb-2">Requirements</label>
+                                <div className="space-y-3">
+                                    {newJob.requirements?.map((req, index) => (
+                                        <div key={index} className="flex items-center gap-2 bg-gray-900/30 p-2 rounded-lg border border-gray-700 group">
+                                            <span className="text-gray-300 text-sm flex-1">{req}</span>
+                                            <button 
+                                                onClick={() => handleRemoveRequirement(index)} 
+                                                className="text-gray-500 hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-all"
+                                                title="Remove requirement"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            className="flex-1 bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:ring-2 focus:ring-emerald-500/50 outline-none"
+                                            placeholder="Add a requirement (e.g. 5+ years React experience)"
+                                            value={reqInput}
+                                            onChange={(e) => setReqInput(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRequirement())}
+                                        />
+                                        <button 
+                                            onClick={handleAddRequirement}
+                                            type="button"
+                                            className="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-5 py-2 rounded-xl text-sm transition-colors font-medium"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
