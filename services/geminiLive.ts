@@ -30,12 +30,24 @@ export class GeminiLiveClient {
     this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
 
     try {
+      // Resume contexts if suspended (browser autoplay policy)
+      if (this.outputAudioContext && this.outputAudioContext.state === 'suspended') {
+        await this.outputAudioContext.resume();
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const source = this.inputAudioContext.createMediaStreamSource(stream);
       const scriptProcessor = this.inputAudioContext.createScriptProcessor(4096, 1, 1);
       
       scriptProcessor.onaudioprocess = (e) => {
+        // Resume context if needed inside the user gesture loop
+        if (this.inputAudioContext?.state === 'suspended') {
+            this.inputAudioContext.resume();
+        }
+
         const inputData = e.inputBuffer.getChannelData(0);
+        
+        // Calculate volume for visualization
         let sum = 0;
         for (let i = 0; i < inputData.length; i++) {
           sum += inputData[i] * inputData[i];
@@ -43,6 +55,7 @@ export class GeminiLiveClient {
         const rms = Math.sqrt(sum / inputData.length);
         this.onVolumeChange(rms * 5);
 
+        // Send to Gemini
         if (this.session) {
           const pcmBlob = createPcmBlob(inputData, 16000);
           this.session.sendRealtimeInput({ media: pcmBlob });
@@ -50,19 +63,24 @@ export class GeminiLiveClient {
       };
 
       source.connect(scriptProcessor);
-      scriptProcessor.connect(this.inputAudioContext.destination);
+      // Connect to destination but mute it to avoid local echo (monitoring), 
+      // while ensuring the script processor still runs.
+      const muteGain = this.inputAudioContext.createGain();
+      muteGain.gain.value = 0;
+      scriptProcessor.connect(muteGain);
+      muteGain.connect(this.inputAudioContext.destination);
 
       const sessionPromise = ai.live.connect({
         model: LIVE_API_MODEL,
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Leda' } },
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }, // 'Kore' is a standard supported voice
           },
           systemInstruction: getSystemInstruction(applicantData),
-          // Enable transcription
-          inputAudioTranscription: { model: "google-1.5-flash-latest" }, // Use a valid model for transcription if required, or empty object if default works
-          outputAudioTranscription: { model: "google-1.5-flash-latest" }, 
+          // Enable transcription with empty objects (default settings)
+          inputAudioTranscription: {}, 
+          outputAudioTranscription: {}, 
         },
         callbacks: {
           onopen: () => {
@@ -88,6 +106,7 @@ export class GeminiLiveClient {
           this.startVideoStream(videoElement);
       }
     } catch (error) {
+      console.error("Connection failed:", error);
       this.disconnect();
       throw error;
     }
@@ -180,6 +199,11 @@ export class GeminiLiveClient {
     if (!this.outputAudioContext) return;
 
     try {
+        // Ensure context is running before playing
+        if (this.outputAudioContext.state === 'suspended') {
+            await this.outputAudioContext.resume();
+        }
+
         const audioBytes = base64ToUint8Array(base64Audio);
         const audioBuffer = await decodeAudioData(audioBytes, this.outputAudioContext);
         
@@ -190,7 +214,12 @@ export class GeminiLiveClient {
         source.connect(outputNode);
         outputNode.connect(this.outputAudioContext.destination);
 
-        this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
+        // Schedule next chunk
+        const currentTime = this.outputAudioContext.currentTime;
+        if (this.nextStartTime < currentTime) {
+            this.nextStartTime = currentTime;
+        }
+        
         source.start(this.nextStartTime);
         this.nextStartTime += audioBuffer.duration;
 

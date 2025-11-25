@@ -1,6 +1,6 @@
 import { ApplicantData } from "./types";
 
-export const LIVE_API_MODEL = 'gemini-2.5-flash-native-audio-preview-09-2025';
+export const LIVE_API_MODEL = 'models/gemini-2.5-flash-native-audio-preview-09-2025';
 
 // Using a professional female avatar placeholder
 export const AVATAR_URL = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop';
